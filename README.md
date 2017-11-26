@@ -4,7 +4,7 @@ A Vue mixin that answers the question, "How do I transition height auto?"
 
 Use this mixin on container elements that have a dynamic number of children. When the container's children rerender, the container's height will transition, instead of instantly resizing.
 
-Note that this library has no overlap with Vue's built in `<transition>` component.
+Note that this library has no overlap with Vue's built in transition components.
 
 ## Demo
 https://jsfiddle.net/axfwg1L0/3/
