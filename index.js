@@ -121,6 +121,3 @@ function listener(event){
 }
 
 export default SmoothHeight
-
-
-module.exports = SmoothHeight;
