@@ -7,7 +7,7 @@ Use this mixin on container elements that have a dynamic number of children. Whe
 Note that this library has no overlap with Vue's built in transition components.
 
 ## Demo
-https://jsfiddle.net/axfwg1L0/3/
+https://jsfiddle.net/axfwg1L0/5/
 
 ## Installation
 
