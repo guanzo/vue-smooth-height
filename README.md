@@ -13,12 +13,12 @@ Using npm:
 ```shell
 $ npm install vue-smooth-height
 ```
-
+<!-- 
 In a browser:
 ```html
 <script src="vue-smooth-height.js"></script>
 ```
-
+ -->
 ## Usage
 
 Module:
@@ -48,10 +48,12 @@ export default {
 }
 </script>
 ```
-Browser:
+<!-- Browser:
 
-Same as above, use the global `SmoothHeight`
+Same as above, use the global `SmoothHeight` -->
 
+## CSS
+This mixin relies on css transitions, meaning you can define whatever css transitions you want to the element. If the mixin does not detect any transitions, it will apply `transition: 1s` to the element.
 
 ## API
 ### $registerElement(options)
