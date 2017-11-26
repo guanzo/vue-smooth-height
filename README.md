@@ -1,6 +1,6 @@
 
 # Vue Smooth Height
-A vue mixin that answers the question, "How do I transition height auto?"
+A Vue mixin that answers the question, "How do I transition height auto?"
 
 Use this mixin on container elements that have a dynamic number of children. When the container's children rerender, the container's height will transition, instead of instantly resizing.
 <!-- 
@@ -53,7 +53,7 @@ export default {
 Same as above, use the global `SmoothHeight` -->
 
 ## CSS
-This mixin relies on css transitions, meaning you can define whatever css transitions you want to the element. If the mixin does not detect any transitions, it will apply `transition: 1s` to the element.
+This mixin relies on css transitions, meaning you can define whatever css transitions you want for the element. If the mixin does not detect any transitions, it will apply `transition: 1s` to the element.
 
 ## API
 ### $registerElement(options)

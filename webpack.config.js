@@ -5,11 +5,10 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 module.exports = {
     entry: './index.js',
     output: {
-        filename: 'vue-smooth-height.js',
-        path: path.resolve(__dirname, 'build'),
-        publicPath: "build/",
+        filename: 'vue-smooth-height.min.js',
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: "dist/",
         library:'SmoothHeight',
-        libraryTarget: 'umd'
     },
     module: {
         rules: [
