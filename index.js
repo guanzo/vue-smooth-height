@@ -1,4 +1,4 @@
-export default {
+const SmoothHeight = {
     methods:{
         /**
          * 
@@ -119,3 +119,8 @@ function listener(event){
     }
     el.removeEventListener('transitionend',listener)
 }
+
+export default SmoothHeight
+
+
+module.exports = SmoothHeight;

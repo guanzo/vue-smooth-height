@@ -9,6 +9,7 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         publicPath: "dist/",
         library:'SmoothHeight',
+        libraryTarget: 'umd'
     },
     module: {
         rules: [
