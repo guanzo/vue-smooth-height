@@ -3,7 +3,7 @@ var webpack = require('webpack')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
-    entry: './index.js',
+    entry: './src/index.js',
     output: {
         filename: 'vue-smooth-height.min.js',
         path: path.resolve(__dirname, 'dist'),
