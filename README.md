@@ -25,7 +25,6 @@ In a browser:
 
 
 ```javascript
-import smoothHeight from 'vue-smooth-height';
 
 <template>
 
@@ -38,6 +37,8 @@ import smoothHeight from 'vue-smooth-height';
 </template>
 
 <script>
+import smoothHeight from 'vue-smooth-height';
+
 export default {
     mixins:[smoothHeight],
     mounted(){
