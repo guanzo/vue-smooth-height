@@ -16,14 +16,8 @@ Using npm:
 $ npm install vue-smooth-height
 ```
 
-In a browser:
-```html
-<script src="vue-smooth-height.min.js"></script>
-```
-
 ## Usage
 
-Module:
 
 ```javascript
 import smoothHeight from 'vue-smooth-height';
@@ -50,9 +44,6 @@ export default {
 }
 </script>
 ```
-Browser:
-
-Same as above, use the global `SmoothHeight`
 
 ## CSS
 This mixin relies on css transitions, meaning you can define whatever css transitions you want for the element. If the mixin does not detect any transitions, it will apply `transition: 1s` to the element.

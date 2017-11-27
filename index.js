@@ -1,1 +1,0 @@
-import SmoothHeight from './dist/vue-smooth-height-min.js'
