@@ -2,7 +2,8 @@
 # Vue Smooth Height
 A Vue mixin that answers the question, "How do I transition height auto?"
 
-Use this mixin on container elements that have a dynamic number of children. When the container's children rerender, the container's height will transition, instead of instantly resizing.
+This mixin is primarily for container elements that have a dynamic number of children, e.g. lists, however it will work on any element who's height changes due to data changes.  When the container's children rerender, the container's height will transition, instead of instantly resizing.
+
 
 Note that this library has no overlap with Vue's built in transition components.
 
@@ -25,15 +26,12 @@ In a browser:
 
 
 ```javascript
-
 <template>
-
-<div>
-    <div class="container" ref="container">
-        <!-- children created with v-for -->
+    <div>
+        <div class="container" ref="container">
+            <!-- children created with v-for -->
+        </div>
     </div>
-</div>
-
 </template>
 
 <script>
