@@ -49,16 +49,19 @@ module.exports = {
                 if(beforeProperty == afterProperty)
                     return;
                 
-                if(hideOverflow){
-                    el.style.overflowX = 'hidden'
-                    el.style.overflowY = 'hidden'
-                }
                 if(computedStyle.transitionDuration === '0s'){
                     el.style.transition = '1s'
                 }
-                let {overflowY,overflowX} = computedStyle
-                option.overflowX = overflowX
-                option.overflowY = overflowY
+                
+                if(hideOverflow){
+                    //save overflow properties before overwriting
+                    let {overflowY,overflowX} = computedStyle
+                    option.overflowX = overflowX
+                    option.overflowY = overflowY
+
+                    el.style.overflowX = 'hidden'
+                    el.style.overflowY = 'hidden'
+                }
 
                 el.style[property] = beforeProperty
                 el.offsetHeight//force reflow
@@ -98,9 +101,7 @@ function _unregister(option){
 
 function select(rootEl, el){
     if(typeof el === 'string'){
-        return rootEl.matches(el)
-                ? rootEl
-                : rootEl.querySelector(el)
+        return rootEl.matches(el) ? rootEl : rootEl.querySelector(el)
     }
     else
         return el
@@ -114,6 +115,7 @@ function listener(event){
     let { property, hideOverflow, overflowX, overflowY } = this;
     el.style[property] = null;
     if(hideOverflow){
+        //restore original overflow properties
         el.style.overflowX = overflowX
         el.style.overflowY = overflowY
     }
