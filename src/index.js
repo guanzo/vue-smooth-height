@@ -1,123 +1,136 @@
+'use strict';
+
 module.exports = {
-    methods:{
+    methods: {
         /**
          * 
          * @param {Object | Array} options 
          */
-        $registerElement(options){
-            let addOption = _addOption.bind(this)
-            if(Array.isArray(options))
-                options.forEach(addOption)
-            else
-                addOption(options)
+        $registerElement: function registerElement(options) {
+            console.warn('$registerElement is deprecated. Use $registerSmoothElement instead');
+            this.$registerSmoothElement(options);
         },
-        $unregisterElement(options){
-            let unregister = _unregister.bind(this)
-            if(Array.isArray(options))
-                options.forEach(unregister)
-            else
-                unregister(options)
+        $unregisterElement: function unregisterElement(options) {
+            console.warn('$unregisterElement is deprecated. Use $unregisterSmoothElement instead');
+            this.$unregisterSmoothElement(options);
+        },
+        $registerSmoothElement: function $registerSmoothElement(options) {
+            var addOption = _addOption.bind(this);
+            if (Array.isArray(options)) options.forEach(addOption);else addOption(options);
+        },
+        $unregisterSmoothElement: function $unregisterSmoothElement(options) {
+            var unregister = _unregister.bind(this);
+            if (Array.isArray(options)) options.forEach(unregister);else unregister(options);
         }
     },
-    created(){
-        this._registered = []
+    created: function created() {
+        this._registered = [];
     },
-    beforeUpdate(){
-        if(!this._registered || !this._registered.length)
-            return;
-        this._registered.forEach(option=>{
+    beforeUpdate: function beforeUpdate() {
+        var _this = this;
 
-            let { el, property } = option;
-            let element = select(this.$el, el)
-            option.element = element
-            if(!element){
+        if (!this._registered || !this._registered.length) return;
+        this._registered.forEach(function (option) {
+            var el = option.el,
+                property = option.property;
+
+            var element = select(_this.$el, el);
+            option.element = element;
+            if (!element) {
                 return;
             }
-            let computedProperty = window.getComputedStyle(element)[property]
-            option.beforeProperty = computedProperty
-        })
+            var computedProperty = window.getComputedStyle(element)[property];
+            option.beforeProperty = computedProperty;
+        });
     },
-    updated(){
-        if(!this._registered || !this._registered.length)
-            return;
-        this._registered.forEach(option=>{
-            
-            let { element: el, property, beforeProperty, hideOverflow } = option;
-            this.$nextTick(()=>{
-                let computedStyle = window.getComputedStyle(el)
-                let afterProperty = computedStyle[property]
-                if(beforeProperty == afterProperty)
-                    return;
-                
-                if(computedStyle.transitionDuration === '0s'){
-                    el.style.transition = '1s'
+    updated: function updated() {
+        var _this2 = this;
+
+        if (!this._registered || !this._registered.length) return;
+        this._registered.forEach(function (option) {
+            var el = option.element,
+                property = option.property,
+                beforeProperty = option.beforeProperty,
+                hideOverflow = option.hideOverflow;
+
+            _this2.$nextTick(function () {
+                var computedStyle = window.getComputedStyle(el);
+                var afterProperty = computedStyle[property];
+                if (beforeProperty == afterProperty) return;
+
+                if (computedStyle.transitionDuration === '0s') {
+                    el.style.transition = '1s';
                 }
-                
-                if(hideOverflow){
+
+                if (hideOverflow) {
                     //save overflow properties before overwriting
-                    let {overflowY,overflowX} = computedStyle
-                    option.overflowX = overflowX
-                    option.overflowY = overflowY
+                    var overflowY = computedStyle.overflowY,
+                        overflowX = computedStyle.overflowX;
 
-                    el.style.overflowX = 'hidden'
-                    el.style.overflowY = 'hidden'
+                    option.overflowX = overflowX;
+                    option.overflowY = overflowY;
+
+                    el.style.overflowX = 'hidden';
+                    el.style.overflowY = 'hidden';
                 }
 
-                el.style[property] = beforeProperty
-                el.offsetHeight//force reflow
-                el.style[property] = afterProperty
-                el.addEventListener('transitionend',listener.bind(option), { passive: true })
-            })
-        })
+                el.style[property] = beforeProperty;
+                el.offsetHeight; //force reflow
+                el.style[property] = afterProperty;
+                el.addEventListener('transitionend', listener.bind(option), { passive: true });
+            });
+        });
     }
-}
+};
 
-function _addOption(option){
+function _addOption(option) {
 
-    let defaultOptions = {
+    var defaultOptions = {
         hideOverflow: false,
         property: 'height'
-    }
+    };
 
-    option = Object.assign(defaultOptions,option)
-    if(!option.el){
-        console.warn('Missing required property: "el"')
+    option = Object.assign(defaultOptions, option);
+    if (!option.el) {
+        console.error('Missing required property: "el"');
         return;
     }
-    this._registered.push(option)
+    this._registered.push(option);
 }
 
-function _unregister(option){
-    let root = this.$el;
-    let index = this._registered.findIndex(d=>{
-        return select(root,d.el).isEqualNode(select(root,option.el))
-    })
-    if(index == -1){
-        console.warn("Unregister failed, invalid options object")
+function _unregister(option) {
+    var root = this.$el;
+    var index = this._registered.findIndex(function (d) {
+        return select(root, d.el).isEqualNode(select(root, option.el));
+    });
+    if (index == -1) {
+        console.error("Unregister failed, invalid options object");
         return;
     }
-    this._registered.splice(index,1)
+    this._registered.splice(index, 1);
 }
 
-function select(rootEl, el){
-    if(typeof el === 'string'){
-        return rootEl.matches(el) ? rootEl : rootEl.querySelector(el)
-    }
-    else
-        return el
+function select(rootEl, el) {
+    if (typeof el === 'string') {
+        return rootEl.matches(el) ? rootEl : rootEl.querySelector(el);
+    } else return el;
 }
 
-function listener(event){
-    let el = event.currentTarget
-    if(el !== event.target){
+function listener(event) {
+    var el = event.currentTarget;
+    if (el !== event.target) {
         return;
     }
-    let { property, hideOverflow, overflowX, overflowY } = this;
+    var property = this.property,
+        hideOverflow = this.hideOverflow,
+        overflowX = this.overflowX,
+        overflowY = this.overflowY;
+
     el.style[property] = null;
-    if(hideOverflow){
+    if (hideOverflow) {
         //restore original overflow properties
-        el.style.overflowX = overflowX
-        el.style.overflowY = overflowY
+        el.style.overflowX = overflowX;
+        el.style.overflowY = overflowY;
     }
-    el.removeEventListener('transitionend',listener)
+    el.removeEventListener('transitionend', listener);
 }

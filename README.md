@@ -2,7 +2,7 @@
 # Vue Smooth Height
 A Vue mixin that answers the question, "How do I transition height auto?"
 
-This mixin is primarily for container elements that have a dynamic number of children, e.g. lists, however it will work on any element who's height changes due to data changes.  When the container's children rerender, the container's height will transition, instead of instantly resizing.
+This mixin is primarily for container elements that have a dynamic number of children, e.g. lists, however it will work on any element whose height changes due to data changes.  When the container's children rerender, the container's height will transition, instead of instantly resizing.
 
 
 Note that this library has no overlap with Vue's built in transition components.
@@ -41,7 +41,7 @@ export default {
     mixins:[smoothHeight],
     mounted(){
         //use nextTick if necessary
-        this.$registerElement({
+        this.$registerSmoothElement({
             el: this.$refs.container,
         })
     },
@@ -54,10 +54,10 @@ Browser:
 Same as above, use the global `SmoothHeight`
 
 ## CSS
-This mixin relies on css transitions, meaning you can define whatever css transitions you want for the element. If the mixin does not detect any transitions, it will apply `transition: 1s` to the element.
+This mixin uses css transitions, meaning you can define whatever css transitions you want for the element. If the mixin does not detect any transitions, it will apply `transition: 1s` to the element.
 
 ## API
-### $registerElement(options)
+### $registerSmoothElement(options)
 #### options: Object | Array
 
 Can be a single options object,
@@ -72,7 +72,7 @@ el|Element,String|null|Required. A reference to the element, or a selector strin
 hideOverflow|Boolean|false|If the element has a scrollbar, ugly reflow flickers can occur when children create/destroy a new row (think flexbox). Set true to disable overflow during the transition.
 
 
-### $unregisterElement(options)
+### $unregisterSmoothElement(options)
 #### options: Object | Array
 
 Can be a single options object,
@@ -86,10 +86,12 @@ Example:
 ```javascript
 
 mounted(){
-    this.$registerElement({
+    //registering with element reference
+    this.$registerSmoothElement({
         el: this.$refs.container,
     })
-    this.$unregisterElement({
+    //unregistering with class name
+    this.$unregisterSmoothElement({
         el: '.container',
     })
 },

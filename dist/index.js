@@ -6,11 +6,19 @@ module.exports = {
          * 
          * @param {Object | Array} options 
          */
-        $registerElement: function $registerElement(options) {
+        $registerElement: function registerElement(options) {
+            console.warn('$registerElement is deprecated. Use $registerSmoothElement instead');
+            this.$registerSmoothElement(options);
+        },
+        $unregisterElement: function unregisterElement(options) {
+            console.warn('$unregisterElement is deprecated. Use $unregisterSmoothElement instead');
+            this.$unregisterSmoothElement(options);
+        },
+        $registerSmoothElement: function $registerSmoothElement(options) {
             var addOption = _addOption.bind(this);
             if (Array.isArray(options)) options.forEach(addOption);else addOption(options);
         },
-        $unregisterElement: function $unregisterElement(options) {
+        $unregisterSmoothElement: function $unregisterSmoothElement(options) {
             var unregister = _unregister.bind(this);
             if (Array.isArray(options)) options.forEach(unregister);else unregister(options);
         }
@@ -50,18 +58,21 @@ module.exports = {
                 var afterProperty = computedStyle[property];
                 if (beforeProperty == afterProperty) return;
 
-                if (hideOverflow) {
-                    el.style.overflowX = 'hidden';
-                    el.style.overflowY = 'hidden';
-                }
                 if (computedStyle.transitionDuration === '0s') {
                     el.style.transition = '1s';
                 }
-                var overflowY = computedStyle.overflowY,
-                    overflowX = computedStyle.overflowX;
 
-                option.overflowX = overflowX;
-                option.overflowY = overflowY;
+                if (hideOverflow) {
+                    //save overflow properties before overwriting
+                    var overflowY = computedStyle.overflowY,
+                        overflowX = computedStyle.overflowX;
+
+                    option.overflowX = overflowX;
+                    option.overflowY = overflowY;
+
+                    el.style.overflowX = 'hidden';
+                    el.style.overflowY = 'hidden';
+                }
 
                 el.style[property] = beforeProperty;
                 el.offsetHeight; //force reflow
@@ -81,7 +92,7 @@ function _addOption(option) {
 
     option = Object.assign(defaultOptions, option);
     if (!option.el) {
-        console.warn('Missing required property: "el"');
+        console.error('Missing required property: "el"');
         return;
     }
     this._registered.push(option);
@@ -93,7 +104,7 @@ function _unregister(option) {
         return select(root, d.el).isEqualNode(select(root, option.el));
     });
     if (index == -1) {
-        console.warn("Unregister failed, invalid options object");
+        console.error("Unregister failed, invalid options object");
         return;
     }
     this._registered.splice(index, 1);
@@ -117,6 +128,7 @@ function listener(event) {
 
     el.style[property] = null;
     if (hideOverflow) {
+        //restore original overflow properties
         el.style.overflowX = overflowX;
         el.style.overflowY = overflowY;
     }
