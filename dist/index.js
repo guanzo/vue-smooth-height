@@ -6,11 +6,11 @@ module.exports = {
          * 
          * @param {Object | Array} options 
          */
-        $registerElement: function registerElement(options) {
+        $registerElement: function $registerElement(options) {
             console.warn('$registerElement is deprecated. Use $registerSmoothElement instead');
             this.$registerSmoothElement(options);
         },
-        $unregisterElement: function unregisterElement(options) {
+        $unregisterElement: function $unregisterElement(options) {
             console.warn('$unregisterElement is deprecated. Use $unregisterSmoothElement instead');
             this.$unregisterSmoothElement(options);
         },
