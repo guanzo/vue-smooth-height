@@ -2,12 +2,13 @@ var path = require('path');
 var webpack = require('webpack')
 
 module.exports = {
-    entry: './src/index.js',
+    entry: './dist/index.js',
     output: {
         filename: 'vue-smooth-height.min.js',
         path: path.resolve(__dirname, 'dist'),
         publicPath: "dist/",
         library:'SmoothHeight',
+        libraryExport: "default"
     },
     module: {
         rules: [

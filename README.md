@@ -80,20 +80,28 @@ or an array of options objects.
 
 Disables smooth height behavior on an element. Registered elements that have the same `el` as the passed in options will be unregistered. 
 
-Example:
+Examples:
 
 
 ```javascript
 
 mounted(){
-    //registering with element reference
+    // Registering with element reference
     this.$registerSmoothElement({
         el: this.$refs.container,
     })
-    //unregistering with class name
+
+    
+    // If the element reference is a vue object, make sure to pass in its "$el" property.
+    this.$registerSmoothElement({
+        el: this.$refs.container.$el,
+    })
+
+    // Unregistering with class name
     this.$unregisterSmoothElement({
         el: '.container',
     })
+
 },
 
 ```

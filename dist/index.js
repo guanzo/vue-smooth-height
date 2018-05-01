@@ -1,6 +1,9 @@
 'use strict';
 
-module.exports = {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = {
     methods: {
         /**
          * 
@@ -57,7 +60,9 @@ module.exports = {
                 var computedStyle = window.getComputedStyle(el);
                 var afterProperty = computedStyle[property];
                 if (beforeProperty == afterProperty) return;
-
+                // TODO: get a transition parser and perform a more robust check
+                // b/c you can have multiple transitions, in which case transitionDuration
+                // could be '1s, 2s'
                 if (computedStyle.transitionDuration === '0s') {
                     el.style.transition = '1s';
                 }
@@ -82,6 +87,7 @@ module.exports = {
         });
     }
 };
+
 
 function _addOption(option) {
 
