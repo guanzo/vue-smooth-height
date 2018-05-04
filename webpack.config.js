@@ -1,15 +1,12 @@
 const path = require('path');
 const webpack = require('webpack')
+const merge = require('webpack-merge');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
-module.exports = {
+const commonConfig = {
     entry: './src/index.js',
     output: {
-        filename: 'vue-smooth-height.min.js',
         path: path.resolve(__dirname, 'dist'),
-        publicPath: "dist/",
-        library:'SmoothHeight',
-        libraryExport: "default"
     },
     module: {
         rules: [
@@ -22,8 +19,26 @@ module.exports = {
                 }
             }
         ]
-    },
-    plugins:[
-        new UglifyJSPlugin(),
-    ]
+    }
 }
+
+module.exports = [
+    merge(commonConfig, {
+        output: {
+            filename: 'vue-smooth-height.min.js',
+            library:'SmoothHeight',
+            libraryTarget: 'window',
+            libraryExport: "default"
+        },
+        plugins:[
+            new UglifyJSPlugin(),
+        ]
+    }),
+    merge(commonConfig, {
+        output: {
+            filename: 'vue-smooth-height.js',
+            libraryTarget: 'umd',
+            library:'vue-smooth-height',
+        }
+    })
+]
