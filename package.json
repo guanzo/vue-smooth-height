@@ -2,6 +2,8 @@
   "name": "vue-smooth-height",
   "version": "1.2.2",
   "description": "Transition a container elements height in response to data changes",
+  "homepage": "https://github.com/guanzo/vue-smooth-height",
+  "keywords": ["vue","height","transition","mixin"],
   "main": "./src/index.js",
   "scripts": {
     "build": "npm run webpack",
