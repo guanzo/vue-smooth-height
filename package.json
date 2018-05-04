@@ -1,6 +1,6 @@
 {
   "name": "vue-smooth-height",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Transition a container elements height in response to data changes",
   "homepage": "https://github.com/guanzo/vue-smooth-height",
   "keywords": [
