@@ -11,14 +11,14 @@ https://jsfiddle.net/axfwg1L0/33/
 
 ## Installation
 
-Using npm:
+Download via npm:
 ```shell
 $ npm install vue-smooth-height
 ```
 
-In a browser:
+Include via cdn:
 ```html
-<script src="vue-smooth-height.min.js"></script>
+<script src="https://unpkg.com/vue-smooth-height"></script>
 ```
 
 ## Usage
