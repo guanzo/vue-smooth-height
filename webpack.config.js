@@ -1,8 +1,9 @@
-var path = require('path');
-var webpack = require('webpack')
+const path = require('path');
+const webpack = require('webpack')
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
-    entry: './dist/index.js',
+    entry: './src/index.js',
     output: {
         filename: 'vue-smooth-height.min.js',
         path: path.resolve(__dirname, 'dist'),
@@ -23,6 +24,6 @@ module.exports = {
         ]
     },
     plugins:[
-        new webpack.optimize.UglifyJsPlugin(),
+        new UglifyJSPlugin(),
     ]
 }
