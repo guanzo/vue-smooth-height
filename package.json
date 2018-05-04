@@ -10,9 +10,6 @@
     "auto"
   ],
   "main": "./src/index.js",
-  "files": [
-    "./src"
-  ],
   "scripts": {
     "build": "npm run webpack",
     "webpack": "webpack",
