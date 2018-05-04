@@ -107,7 +107,8 @@ mounted(){
         el: '.container',
     })
 
-    // If the element reference is a component, make sure to pass in its "$el" property.
+    // If the element reference is a component, 
+    // make sure to pass in its "$el" property.
     this.$registerSmoothElement({
         el: this.$refs.container.$el,
     })
