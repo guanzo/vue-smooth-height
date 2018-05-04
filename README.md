@@ -27,9 +27,7 @@ Include via cdn:
 ```javascript
 <template>
     <div>
-        <div class="container" ref="container">
-            <!-- children created with v-for -->
-        </div>
+        <div ref="container"></div>
     </div>
 </template>
 
@@ -39,8 +37,7 @@ import smoothHeight from 'vue-smooth-height';
 export default {
     mixins:[smoothHeight],
     mounted(){
-        //use nextTick if necessary
-        this.$registerSmoothElement({
+        this.$smoothElement({
             el: this.$refs.container,
         })
     },
@@ -68,7 +65,7 @@ VSM will set ```style="transition: opacity 1s, height 1s;"``` on the element dur
 For simplicity, do not set your other transitions on the element as inline styles, as they will be overridden.
 
 ## API
-### $registerSmoothElement(options)
+### $smoothElement(options)
 #### options: Object | Array
 
 Can be a single options object,
@@ -79,12 +76,12 @@ Enables smooth height transition on an element.
 
 **Option**|**Types**|**Default**|**Description**
 -----|-----|-----|-----
-el|Element, String|null|Required. A reference to the element, or a selector string. Use a selector string if the element is not rendered initially. If the selector string is a class, the first query match will be registered.
+el|Element, String|null|Required. A reference to the element, or a selector string. Use a selector string if the element is not rendered initially. If the selector string is a class, the first query match will be used.
 hideOverflow|Boolean|false|If the element has a scrollbar, ugly reflow flickers can occur when children create/destroy a new row (think flexbox). Set true to disable overflow during the transition.
 debug|Boolean|false|Logs messages at certain times within the transition lifecycle.
 
 
-### $unregisterSmoothElement(options)
+### $unsmoothElement(options)
 #### options: Object | Array
 
 Can be a single options object,
@@ -99,17 +96,17 @@ Examples:
 
 mounted(){
     // Registering with element reference
-    this.$registerSmoothElement({
+    this.$smoothElement({
         el: this.$refs.container,
     })
     // Registering with classname
-    this.$registerSmoothElement({
+    this.$smoothElement({
         el: '.container',
     })
 
     // If the element reference is a component, 
     // make sure to pass in its "$el" property.
-    this.$registerSmoothElement({
+    this.$smoothElement({
         el: this.$refs.container.$el,
     })
 

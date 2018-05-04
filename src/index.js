@@ -2,40 +2,46 @@ import parseCssTransition from 'parse-css-transition'
 
 // Vue lifecycle hook
 function created() {
-    this._registered = []
+    this._smoothElements = []
 }
 
 // Vue specific object
 const methods = {
-    /**
-     * @param {Object | Array} options 
-     */
     $registerElement(options) {
-        console.warn('vue-smooth-height: $registerElement is deprecated. Use $registerSmoothElement instead')
-        this.$registerSmoothElement(options)
+        console.warn('vue-smooth-height: $registerElement is deprecated. Use $smoothElement instead')
+        this.$smoothElement(options)
     },
-    $unregisterElement(options) {
-        console.warn('vue-smooth-height: $unregisterElement is deprecated. Use $unregisterSmoothElement instead')
-        this.$unregisterSmoothElement(options)
+    $removeElementElement(options) {
+        console.warn('vue-smooth-height: $removeElementElement is deprecated. Use $unsmoothElement instead')
+        this.$unsmoothElement(options)
     },
     $registerSmoothElement(options) {
-        let _addOption = addOption.bind(this)
-        if (Array.isArray(options)) 
-            options.forEach(_addOption)
-        else 
-            _addOption(options)
+        console.warn('vue-smooth-height: $registerSmoothElement is deprecated. Use $smoothElement instead')
+        this.$smoothElement(options)
     },
-    $unregisterSmoothElement(options) {
-        let _unregister = unregister.bind(this)
-        if (Array.isArray(options))
-            options.forEach(_unregister)
+    $removeElementSmoothElement(options) {
+        console.warn('vue-smooth-height: $removeElementSmoothElement is deprecated. Use $unsmoothElement instead')
+        this.$unsmoothElement(options)
+    },
+    $smoothElement(options) {
+        let _addElement = addElement.bind(this)
+        if (Array.isArray(options)) 
+            options.forEach(_addElement)
         else 
-            _unregister(options)
-    }
+            _addElement(options)
+    },
+    $unsmoothElement(options) {
+        let _removeElement = removeElement.bind(this)
+        if (Array.isArray(options))
+            options.forEach(_removeElement)
+        else 
+            _removeElement(options)
+    },
+    
 }
 
 // 'this' is vue component
-function addOption(option) {
+function addElement(option) {
     if (!option.el) {
         console.error('vue-smooth-height: Missing required property: "el"')
         return
@@ -54,20 +60,20 @@ function addOption(option) {
     option = Object.assign(defaultOptions, option)
     option.endListener = endListener.bind(option)
     option.stopTransition = stopTransition.bind(option)
-    this._registered.push(option)
+    this._smoothElements.push(option)
 }
 
 // 'this' is vue component
-function unregister(option) {
+function removeElement(option) {
     let root = this.$el
-    let index = this._registered.findIndex(d => {
+    let index = this._smoothElements.findIndex(d => {
         return select(root, d.el).isEqualNode(select(root, option.el))
     })
     if (index == -1) {
-        console.error("vue-smooth-height: Unregister failed due to invalid el option")
+        console.error("vue-smooth-height: Remove smooth element failed due to invalid el option")
         return
     }
-    this._registered.splice(index, 1)
+    this._smoothElements.splice(index, 1)
 }
 
 function select(rootEl, el) {
@@ -85,10 +91,10 @@ const STATES = {
 
 // Vue lifecycle hook
 function beforeUpdate() {
-    if (!this._registered || !this._registered.length) 
+    if (!this._smoothElements || !this._smoothElements.length) 
         return
 
-    this._registered.forEach(option => {
+    this._smoothElements.forEach(option => {
         let { el, debug } = option
         // Find element during update time, instead of registration time
         let $el = select(this.$el, el)
@@ -108,10 +114,10 @@ function beforeUpdate() {
 
 // Vue lifecycle hook
 function updated() {
-    if (!this._registered || !this._registered.length) 
+    if (!this._smoothElements || !this._smoothElements.length) 
         return
 
-    this._registered.forEach(option => {
+    this._smoothElements.forEach(option => {
         if (!option.$el) {
             return
         }
