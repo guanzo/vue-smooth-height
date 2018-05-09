@@ -152,7 +152,7 @@ function removeElement(option) {
         return select(root, d.el).isEqualNode(select(root, option.el));
     });
     if (index == -1) {
-        console.error("vue-smooth-height: Remove smooth element failed due to invalid el option");
+        console.error('vue-smooth-height: Remove smooth element failed due to invalid el option');
         return;
     }
     this._smoothElements.splice(index, 1);
@@ -171,11 +171,10 @@ var STATES = {
 };function beforeUpdate() {
     var _this = this;
 
-    if (!this._smoothElements || !this._smoothElements.length) return;
+    if (!this._smoothElements || !this._smoothElements.length || !this.$el) return;
 
     this._smoothElements.forEach(function (option) {
-        var el = option.el,
-            debug = option.debug;
+        var el = option.el;
         // Find element during update time, instead of registration time
 
         var $el = select(_this.$el, el);
@@ -197,7 +196,7 @@ var STATES = {
 function updated() {
     var _this2 = this;
 
-    if (!this._smoothElements || !this._smoothElements.length) return;
+    if (!this._smoothElements || !this._smoothElements.length || !this.$el) return;
 
     this._smoothElements.forEach(function (option) {
         if (!option.$el) {
@@ -212,8 +211,7 @@ function updated() {
 function doSmoothReflow(option) {
     var $el = option.$el,
         beforeHeight = option.beforeHeight,
-        hideOverflow = option.hideOverflow,
-        debug = option.debug;
+        hideOverflow = option.hideOverflow;
 
 
     var computedStyle = window.getComputedStyle($el);
@@ -226,12 +224,12 @@ function doSmoothReflow(option) {
     option.log('Previous height: ' + beforeHeight + ' Current height: ' + afterHeight);
 
     var transition = computedStyle.transition;
-    option.parsedTransition = (0, _parseCssTransition2.default)(transition);
-    if (hasHeightTransition(option.parsedTransition)) {
+    var parsedTransition = (0, _parseCssTransition2.default)(transition);
+    if (hasHeightTransition(parsedTransition)) {
         option.hasExistingHeightTransition = true;
     } else {
         option.hasExistingHeightTransition = false;
-        addHeightTransition($el, option.parsedTransition);
+        addHeightTransition($el, parsedTransition);
     }
 
     if (hideOverflow) {

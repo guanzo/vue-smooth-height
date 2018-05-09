@@ -70,7 +70,7 @@ function removeElement(option) {
         return select(root, d.el).isEqualNode(select(root, option.el))
     })
     if (index == -1) {
-        console.error("vue-smooth-height: Remove smooth element failed due to invalid el option")
+        console.error('vue-smooth-height: Remove smooth element failed due to invalid el option')
         return
     }
     this._smoothElements.splice(index, 1)
@@ -91,11 +91,11 @@ const STATES = {
 
 // Vue lifecycle hook
 function beforeUpdate() {
-    if (!this._smoothElements || !this._smoothElements.length) 
+    if (!this._smoothElements || !this._smoothElements.length || !this.$el) 
         return
 
     this._smoothElements.forEach(option => {
-        let { el, debug } = option
+        let { el } = option
         // Find element during update time, instead of registration time
         let $el = select(this.$el, el)
         if (!$el) {
@@ -114,7 +114,7 @@ function beforeUpdate() {
 
 // Vue lifecycle hook
 function updated() {
-    if (!this._smoothElements || !this._smoothElements.length) 
+    if (!this._smoothElements || !this._smoothElements.length || !this.$el) 
         return
 
     this._smoothElements.forEach(option => {
@@ -126,24 +126,24 @@ function updated() {
 }
 
 function doSmoothReflow(option) {
-    let { $el, beforeHeight, hideOverflow, debug } = option
+    let { $el, beforeHeight, hideOverflow } = option
 
     let computedStyle = window.getComputedStyle($el)
     let afterHeight = computedStyle['height']
     if (beforeHeight == afterHeight) {
         option.transitionState = STATES.ENDED
-        option.log(`Element height did not change between render.`)
+        option.log('Element height did not change between render.')
         return
     }
     option.log(`Previous height: ${beforeHeight} Current height: ${afterHeight}`)
 
     let transition = computedStyle.transition
-    option.parsedTransition = parseCssTransition(transition)
-    if (hasHeightTransition(option.parsedTransition)) {
+    let parsedTransition = parseCssTransition(transition)
+    if (hasHeightTransition(parsedTransition)) {
         option.hasExistingHeightTransition = true
     } else {
         option.hasExistingHeightTransition = false
-        addHeightTransition($el, option.parsedTransition)
+        addHeightTransition($el, parsedTransition)
     }
 
     if (hideOverflow) {
