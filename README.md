@@ -7,7 +7,7 @@ When the component's data is changed (i.e. when the `updated` lifecycle hook is 
 Note that this library has no overlap with Vue's built in transition components.
 
 ## Demo
-https://jsfiddle.net/axfwg1L0/35/
+https://jsfiddle.net/axfwg1L0/36/
 
 ## Installation
 
@@ -50,7 +50,7 @@ Browser:
 The mixin is available via the global variable `SmoothHeight`
 
 ## CSS Transitions
-VSM will check if the element has a height transition. If it exists, VSM will use that. If it doesn't, it will apply `transition: height 1s` to the element's inline style, and append any existing transition properties it finds.
+VSM will check if the element has a height transition, either through the stylesheet or inline styles. If it exists, VSM will use that. If it doesn't, it will apply `transition: height 1s` to the element's inline style, and append any existing transition properties it finds.
 
 For example, if the element has this style:
 
@@ -62,7 +62,7 @@ For example, if the element has this style:
 
 VSM will set ```style="transition: opacity 1s, height 1s;"``` on the element during the transition. After the transition, it will remove the inline style.
 
-For simplicity, do not set your other transitions on the element as inline styles, as they will be overridden.
+For compatibility, do not set your other transitions on the element as inline styles, as they will be overridden.
 
 ## API
 ### $smoothElement(options)
@@ -77,6 +77,7 @@ Enables smooth height transition on an element.
 **Option**|**Types**|**Default**|**Description**
 -----|-----|-----|-----
 el|Element, String|null|Required. A reference to the element, or a selector string. Use a selector string if the element is not rendered initially. If the selector string is a class, the first query match will be used.
+transition|String|<nobr>`height 1s`</nobr>| The CSS shorthand `transition` property. Use this option if you don't want to use stylesheets (`<style>...</style>`). 
 hideOverflow|Boolean|false|If the element has a scrollbar, ugly reflow flickers can occur when children create/destroy a new row (think flexbox). Set true to disable overflow during the transition.
 debug|Boolean|false|Logs messages at certain times within the transition lifecycle.
 
@@ -89,21 +90,21 @@ or an array of options objects.
 
 Disables smooth height behavior on an element. Registered elements that have the same `el` as the passed in options will be unregistered. 
 
-Examples:
+## Examples:
 
 
 ```javascript
 
 mounted(){
-    // Registering with element reference
+    // Register with element reference
     this.$smoothElement({
         el: this.$refs.container,
     })
-    // Registering with classname
+    // Register with classname
     this.$smoothElement({
         el: '.container',
     })
-    // Passing an array of options
+    // Pass an array of options
     this.$smoothElement([
         {
             el: this.$refs.container,

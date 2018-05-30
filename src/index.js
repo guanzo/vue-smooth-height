@@ -22,7 +22,7 @@ const methods = {
         let _addElement = addElement.bind(this)
         if (Array.isArray(options)) 
             options.forEach(_addElement)
-        else 
+        else
             _addElement(options)
     },
     $unsmoothElement(options) {
