@@ -45,8 +45,8 @@ function beforeUpdate() {
     if (!this._smoothElements || !this._smoothElements.length) 
         return
     this._smoothElements.forEach(e =>{
-        let $el = select(this.$el, e.el)
-        e.beforeUpdate(this.$el)
+        let $el = select(this.$el, e.options.el)
+        e.beforeUpdate($el)
     })
 }
 
@@ -54,7 +54,9 @@ function beforeUpdate() {
 function updated() {
     if (!this._smoothElements || !this._smoothElements.length) 
         return
-    this._smoothElements.forEach(e => this.$nextTick(e.doSmoothReflow))
+    this.$nextTick(()=>{
+        this._smoothElements.forEach(e => e.doSmoothReflow())
+    })
 }
 
 // 'this' is vue component
@@ -63,8 +65,7 @@ function addElement(option) {
         console.error('vue-smooth-height: Missing required property: "el"')
         return
     }
-    let smoothEl = new SmoothElement(option)
-    this._smoothElements.push(smoothEl)
+    this._smoothElements.push(new SmoothElement(option))
 }
 
 // 'this' is vue component
@@ -94,17 +95,25 @@ const STATES = {
     INTERRUPTED: 3
 }
 
+
+
 class SmoothElement {
     constructor(options) {
-        Object.assign(this,{
+        options = {
             el: null, // User given argument. Element or selector string
-            $el: null,// Resolved Element
+            transition: 'height 1s', // User can specify a transition if they don't want to use CSS
             hideOverflow: false,
             debug: false,
+            ...options
+        }
+        Object.assign(this, {
+            $el: null,// Resolved Element from el
             hasExistingHeightTransition: false,
             state: STATES.START,
+            options
         })
-        Object.assign(this, options)
+        // transition end callback will call endListener, so it needs the correct context
+        this.endListener = this.endListener.bind(this)
     }
     transition(to) {
         this.state = to
@@ -113,7 +122,8 @@ class SmoothElement {
         if (e.currentTarget !== e.target || e.propertyName !== 'height')
             return
         this.stopTransition()
-    }
+    } // $el is dynamically queried before each component update
+      // to cover the case where the element is hidden with v-if/v-show/etc
     beforeUpdate($el) {
         if (!$el) {
             return
@@ -131,27 +141,27 @@ class SmoothElement {
         if (!this.$el) {
             return
         }
-        let { $el, beforeHeight, hideOverflow, debug } = this
-    
+        let { $el, beforeHeight, options } = this
+
         let computedStyle = window.getComputedStyle($el)
         let afterHeight = computedStyle['height']
         if (beforeHeight == afterHeight) {
             this.transition(STATES.ENDED)
-            option.log(`Element height did not change between render.`)
+            this.log(`Element height did not change between render.`)
             return
         }
         this.log(`Previous height: ${beforeHeight} Current height: ${afterHeight}`)
     
         let transition = computedStyle.transition
-        parsedTransition = parseCssTransition(transition)
+        let parsedTransition = parseCssTransition(transition)
         if (this.hasHeightTransition(parsedTransition)) {
             this.hasExistingHeightTransition = true
         } else {
             this.hasExistingHeightTransition = false
-            this.addHeightTransition(parsedTransition)
+            this.addHeightTransition(parsedTransition, options.transition)
         }
     
-        if (hideOverflow) {
+        if (options.hideOverflow) {
             //save overflow properties before overwriting
             let overflowY = computedStyle.overflowY,
                 overflowX = computedStyle.overflowX
@@ -175,20 +185,20 @@ class SmoothElement {
     }
     // Delay and Duration are in milliseconds
     // Add height transition to existing transitions.
-    addHeightTransition(parsedTransition) {
+    addHeightTransition(parsedTransition, heightTransition) {
         let transitions = parsedTransition.map(t => {
             return `${t.name} ${t.duration}ms ${t.timingFunction} ${t.delay}ms`
         })
-        this.$el.style.transition = transitions.join(',') + ',height 1s'
+        this.$el.style.transition = [...transitions, heightTransition].join(',')
     }
     stopTransition() {
         let { 
-            $el, hideOverflow, overflowX, overflowY,
+            $el, options, overflowX, overflowY,
             hasExistingHeightTransition,
         } = this
     
         $el.style['height'] = null // Change height back to auto
-        if (hideOverflow) {
+        if (options.hideOverflow) {
             // Restore original overflow properties
             $el.style.overflowX = overflowX
             $el.style.overflowY = overflowY
@@ -201,11 +211,10 @@ class SmoothElement {
         this.transition(STATES.ENDED)
     }
     log(text) {
-        if (this.debug)
-            console.log(`VSM_DEBUG: ${text}`)
+        if (this.options.debug)
+            console.log(`VSM_DEBUG: ${text}`, this.$el)
     }
 }
-
 
 export default {
     methods,

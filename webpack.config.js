@@ -13,9 +13,12 @@ const commonConfig = {
             {
                 test: /\.js$/,
                 exclude: /(node_modules|bower_components)/,
-                loader: 'babel-loader',
-                query: {
-                    presets: ['es2015']
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env'],
+                        babelrc: false
+                    }
                 }
             }
         ]
@@ -24,6 +27,7 @@ const commonConfig = {
 
 module.exports = [
     merge(commonConfig, {
+        mode: 'production',
         output: {
             filename: 'vue-smooth-height.min.js',
             library:'SmoothHeight',
@@ -35,10 +39,12 @@ module.exports = [
         ]
     }),
     merge(commonConfig, {
+        mode: 'development',
+        devtool: 'nosources-source-map',
         output: {
             filename: 'vue-smooth-height.js',
             libraryTarget: 'umd',
             library:'vue-smooth-height',
         }
-    })
+    }),
 ]

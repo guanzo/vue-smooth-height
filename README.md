@@ -103,7 +103,16 @@ mounted(){
     this.$smoothElement({
         el: '.container',
     })
-
+    // Passing an array of options
+    this.$smoothElement([
+        {
+            el: this.$refs.container,
+        },
+        {
+            el: '.container',
+            hideOverflow: true
+        }
+    ])
     // If the element reference is a component, 
     // make sure to pass in its "$el" property.
     this.$smoothElement({
