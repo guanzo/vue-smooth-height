@@ -1,62 +1,41 @@
 import parseCssTransition from 'parse-css-transition'
 
-// Vue specific object
-const methods = {
-    $registerElement(options) {
-        console.warn('vue-smooth-height: $registerElement is deprecated. Use $smoothElement instead')
-        this.$smoothElement(options)
+const mixin = {
+    methods: {
+        $smoothElement(options) {
+            let _addElement = addElement.bind(this)
+            if (Array.isArray(options)) 
+                options.forEach(_addElement)
+            else
+                _addElement(options)
+        },
+        $unsmoothElement(options) {
+            let _removeElement = removeElement.bind(this)
+            if (Array.isArray(options))
+                options.forEach(_removeElement)
+            else 
+                _removeElement(options)
+        },
     },
-    $removeElementElement(options) {
-        console.warn('vue-smooth-height: $removeElementElement is deprecated. Use $unsmoothElement instead')
-        this.$unsmoothElement(options)
+    created() {
+        this._smoothElements = []
     },
-    $registerSmoothElement(options) {
-        console.warn('vue-smooth-height: $registerSmoothElement is deprecated. Use $smoothElement instead')
-        this.$smoothElement(options)
+    beforeUpdate() {
+        if (!this._smoothElements || !this._smoothElements.length) 
+            return
+        this._smoothElements.forEach(e =>{
+            // Retrieve registered element on demand
+            let $el = select(this.$el, e.options.el)
+            e.beforeUpdate($el)
+        })
     },
-    $removeElementSmoothElement(options) {
-        console.warn('vue-smooth-height: $removeElementSmoothElement is deprecated. Use $unsmoothElement instead')
-        this.$unsmoothElement(options)
-    },
-    $smoothElement(options) {
-        let _addElement = addElement.bind(this)
-        if (Array.isArray(options)) 
-            options.forEach(_addElement)
-        else
-            _addElement(options)
-    },
-    $unsmoothElement(options) {
-        let _removeElement = removeElement.bind(this)
-        if (Array.isArray(options))
-            options.forEach(_removeElement)
-        else 
-            _removeElement(options)
-    },
-    
-}
-
-// Vue lifecycle hook
-function created() {
-    this._smoothElements = []
-}
-
-// Vue lifecycle hook
-function beforeUpdate() {
-    if (!this._smoothElements || !this._smoothElements.length) 
-        return
-    this._smoothElements.forEach(e =>{
-        let $el = select(this.$el, e.options.el)
-        e.beforeUpdate($el)
-    })
-}
-
-// Vue lifecycle hook
-function updated() {
-    if (!this._smoothElements || !this._smoothElements.length) 
-        return
-    this.$nextTick(()=>{
-        this._smoothElements.forEach(e => e.doSmoothReflow())
-    })
+    updated() {
+        if (!this._smoothElements || !this._smoothElements.length) 
+            return
+        this.$nextTick(()=>{
+            this._smoothElements.forEach(e => e.doSmoothReflow())
+        })
+    }
 }
 
 // 'this' is vue component
@@ -89,19 +68,15 @@ function select(rootEl, el) {
 }
 
 const STATES = {
-    BEFORE_UPDATE: 0,
-    UPDATED: 1,
-    ENDED: 2,
-    INTERRUPTED: 3
+    INACTIVE: 0,
+    ACTIVE: 1
 }
-
-
 
 class SmoothElement {
     constructor(options) {
         options = {
             el: null, // User given argument. Element or selector string
-            transition: 'height 1s', // User can specify a transition if they don't want to use CSS
+            transition: 'height .5s', // User can specify a transition if they don't want to use CSS
             hideOverflow: false,
             debug: false,
             ...options
@@ -109,7 +84,7 @@ class SmoothElement {
         Object.assign(this, {
             $el: null,// Resolved Element from el
             hasExistingHeightTransition: false,
-            state: STATES.START,
+            state: STATES.INACTIVE,
             options
         })
         // transition end callback will call endListener, so it needs the correct context
@@ -131,11 +106,11 @@ class SmoothElement {
         this.$el = $el
         let height = window.getComputedStyle($el)['height']
         this.beforeHeight = height
-        if (this.state === STATES.IN_PROGRESS) {
+        if (this.state === STATES.ACTIVE) {
             this.stopTransition()
             this.log('Transition was interrupted.')
         }
-        this.transition(STATES.IN_PROGRESS)
+        this.transition(STATES.ACTIVE)
     }
     doSmoothReflow() {
         if (!this.$el) {
@@ -146,7 +121,7 @@ class SmoothElement {
         let computedStyle = window.getComputedStyle($el)
         let afterHeight = computedStyle['height']
         if (beforeHeight == afterHeight) {
-            this.transition(STATES.ENDED)
+            this.transition(STATES.INACTIVE)
             this.log(`Element height did not change between render.`)
             return
         }
@@ -208,7 +183,7 @@ class SmoothElement {
             $el.style.transition = null
         }
         $el.removeEventListener('transitionend', this.endListener)
-        this.transition(STATES.ENDED)
+        this.transition(STATES.INACTIVE)
     }
     log(text) {
         if (this.options.debug)
@@ -216,9 +191,4 @@ class SmoothElement {
     }
 }
 
-export default {
-    methods,
-    created,
-    beforeUpdate,
-    updated,
-}
+export default mixin

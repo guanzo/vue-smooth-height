@@ -207,64 +207,44 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-// Vue specific object
-var methods = {
-  $registerElement: function $registerElement(options) {
-    console.warn('vue-smooth-height: $registerElement is deprecated. Use $smoothElement instead');
-    this.$smoothElement(options);
+var mixin = {
+  methods: {
+    $smoothElement: function $smoothElement(options) {
+      var _addElement = addElement.bind(this);
+
+      if (Array.isArray(options)) options.forEach(_addElement);else _addElement(options);
+    },
+    $unsmoothElement: function $unsmoothElement(options) {
+      var _removeElement = removeElement.bind(this);
+
+      if (Array.isArray(options)) options.forEach(_removeElement);else _removeElement(options);
+    }
   },
-  $removeElementElement: function $removeElementElement(options) {
-    console.warn('vue-smooth-height: $removeElementElement is deprecated. Use $unsmoothElement instead');
-    this.$unsmoothElement(options);
+  created: function created() {
+    this._smoothElements = [];
   },
-  $registerSmoothElement: function $registerSmoothElement(options) {
-    console.warn('vue-smooth-height: $registerSmoothElement is deprecated. Use $smoothElement instead');
-    this.$smoothElement(options);
-  },
-  $removeElementSmoothElement: function $removeElementSmoothElement(options) {
-    console.warn('vue-smooth-height: $removeElementSmoothElement is deprecated. Use $unsmoothElement instead');
-    this.$unsmoothElement(options);
-  },
-  $smoothElement: function $smoothElement(options) {
-    var _addElement = addElement.bind(this);
+  beforeUpdate: function beforeUpdate() {
+    var _this = this;
 
-    if (Array.isArray(options)) options.forEach(_addElement);else _addElement(options);
-  },
-  $unsmoothElement: function $unsmoothElement(options) {
-    var _removeElement = removeElement.bind(this);
+    if (!this._smoothElements || !this._smoothElements.length) return;
 
-    if (Array.isArray(options)) options.forEach(_removeElement);else _removeElement(options);
-  }
-}; // Vue lifecycle hook
-
-function created() {
-  this._smoothElements = [];
-} // Vue lifecycle hook
-
-
-function beforeUpdate() {
-  var _this = this;
-
-  if (!this._smoothElements || !this._smoothElements.length) return;
-
-  this._smoothElements.forEach(function (e) {
-    var $el = select(_this.$el, e.options.el);
-    e.beforeUpdate($el);
-  });
-} // Vue lifecycle hook
-
-
-function updated() {
-  var _this2 = this;
-
-  if (!this._smoothElements || !this._smoothElements.length) return;
-  this.$nextTick(function () {
-    _this2._smoothElements.forEach(function (e) {
-      return e.doSmoothReflow();
+    this._smoothElements.forEach(function (e) {
+      // Retrieve registered element on demand
+      var $el = select(_this.$el, e.options.el);
+      e.beforeUpdate($el);
     });
-  });
-} // 'this' is vue component
+  },
+  updated: function updated() {
+    var _this2 = this;
 
+    if (!this._smoothElements || !this._smoothElements.length) return;
+    this.$nextTick(function () {
+      _this2._smoothElements.forEach(function (e) {
+        return e.doSmoothReflow();
+      });
+    });
+  }
+}; // 'this' is vue component
 
 function addElement(option) {
   if (!option.el) {
@@ -296,10 +276,8 @@ function select(rootEl, el) {
 }
 
 var STATES = {
-  BEFORE_UPDATE: 0,
-  UPDATED: 1,
-  ENDED: 2,
-  INTERRUPTED: 3
+  INACTIVE: 0,
+  ACTIVE: 1
 };
 
 var SmoothElement =
@@ -311,7 +289,7 @@ function () {
     options = _objectSpread({
       el: null,
       // User given argument. Element or selector string
-      transition: 'height 1s',
+      transition: 'height .5s',
       // User can specify a transition if they don't want to use CSS
       hideOverflow: false,
       debug: false
@@ -320,7 +298,7 @@ function () {
       $el: null,
       // Resolved Element from el
       hasExistingHeightTransition: false,
-      state: STATES.START,
+      state: STATES.INACTIVE,
       options: options
     }); // transition end callback will call endListener, so it needs the correct context
 
@@ -351,12 +329,12 @@ function () {
       var height = window.getComputedStyle($el)['height'];
       this.beforeHeight = height;
 
-      if (this.state === STATES.IN_PROGRESS) {
+      if (this.state === STATES.ACTIVE) {
         this.stopTransition();
         this.log('Transition was interrupted.');
       }
 
-      this.transition(STATES.IN_PROGRESS);
+      this.transition(STATES.ACTIVE);
     }
   }, {
     key: "doSmoothReflow",
@@ -372,7 +350,7 @@ function () {
       var afterHeight = computedStyle['height'];
 
       if (beforeHeight == afterHeight) {
-        this.transition(STATES.ENDED);
+        this.transition(STATES.INACTIVE);
         this.log("Element height did not change between render.");
         return;
       }
@@ -445,7 +423,7 @@ function () {
       }
 
       $el.removeEventListener('transitionend', this.endListener);
-      this.transition(STATES.ENDED);
+      this.transition(STATES.INACTIVE);
     }
   }, {
     key: "log",
@@ -457,12 +435,7 @@ function () {
   return SmoothElement;
 }();
 
-var _default = {
-  methods: methods,
-  created: created,
-  beforeUpdate: beforeUpdate,
-  updated: updated
-};
+var _default = mixin;
 exports.default = _default;
 
 /***/ })
