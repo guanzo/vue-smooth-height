@@ -240,7 +240,10 @@ var mixin = {
     if (!this._smoothElements || !this._smoothElements.length) return;
     this.$nextTick(function () {
       _this2._smoothElements.forEach(function (e) {
-        return e.doSmoothReflow();
+        // Retrieve registered element on demand
+        // El could have been hidden by v-if/v-show
+        var $el = select(_this2.$el, e.options.el);
+        e.doSmoothReflow($el);
       });
     });
   }
@@ -322,32 +325,37 @@ function () {
     key: "beforeUpdate",
     value: function beforeUpdate($el) {
       if (!$el) {
-        return;
+        this.log("Vue beforeUpdate hook: could not find registered el.");
       }
 
-      this.$el = $el;
-      var height = window.getComputedStyle($el)['height'];
+      var height;
+
+      try {
+        height = $el.offsetHeight;
+      } catch (e) {
+        height = 0;
+      }
+
       this.beforeHeight = height;
 
       if (this.state === STATES.ACTIVE) {
         this.stopTransition();
         this.log('Transition was interrupted.');
       }
-
-      this.transition(STATES.ACTIVE);
     }
   }, {
     key: "doSmoothReflow",
-    value: function doSmoothReflow() {
-      if (!this.$el) {
+    value: function doSmoothReflow($el) {
+      if (!$el) {
+        this.log("Vue updated hook: could not find registered el.");
         return;
       }
 
-      var $el = this.$el,
-          beforeHeight = this.beforeHeight,
+      this.$el = $el;
+      this.transition(STATES.ACTIVE);
+      var beforeHeight = this.beforeHeight,
           options = this.options;
-      var computedStyle = window.getComputedStyle($el);
-      var afterHeight = computedStyle['height'];
+      var afterHeight = $el.offsetHeight;
 
       if (beforeHeight == afterHeight) {
         this.transition(STATES.INACTIVE);
@@ -356,6 +364,7 @@ function () {
       }
 
       this.log("Previous height: ".concat(beforeHeight, " Current height: ").concat(afterHeight));
+      var computedStyle = window.getComputedStyle($el);
       var transition = computedStyle.transition;
       var parsedTransition = (0, _parseCssTransition.default)(transition);
 
@@ -376,10 +385,11 @@ function () {
         $el.style.overflowY = 'hidden';
       }
 
-      $el.style['height'] = beforeHeight;
+      $el.style['height'] = beforeHeight + 'px';
       $el.offsetHeight; // Force reflow
 
-      $el.style['height'] = afterHeight;
+      $el.style['height'] = afterHeight + 'px';
+      console.log(afterHeight, $el.style['height']);
       $el.addEventListener('transitionend', this.endListener, {
         passive: true
       });

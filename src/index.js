@@ -23,8 +23,9 @@ const mixin = {
     beforeUpdate() {
         if (!this._smoothElements || !this._smoothElements.length) 
             return
-        this._smoothElements.forEach(e =>{
+        this._smoothElements.forEach(e => {
             // Retrieve registered element on demand
+            // El could have been hidden by v-if/v-show
             let $el = select(this.$el, e.options.el)
             e.beforeUpdate($el)
         })
@@ -33,7 +34,12 @@ const mixin = {
         if (!this._smoothElements || !this._smoothElements.length) 
             return
         this.$nextTick(()=>{
-            this._smoothElements.forEach(e => e.doSmoothReflow())
+            this._smoothElements.forEach(e => {
+                // Retrieve registered element on demand
+                // El could have been hidden by v-if/v-show
+                let $el = select(this.$el, e.options.el)
+                e.doSmoothReflow($el)
+            })
         })
     }
 }
@@ -97,29 +103,34 @@ class SmoothElement {
         if (e.currentTarget !== e.target || e.propertyName !== 'height')
             return
         this.stopTransition()
-    } // $el is dynamically queried before each component update
-      // to cover the case where the element is hidden with v-if/v-show/etc
+    }
     beforeUpdate($el) {
         if (!$el) {
-            return
+            this.log("Vue beforeUpdate hook: could not find registered el.")
         }
-        this.$el = $el
-        let height = window.getComputedStyle($el)['height']
+        let height
+        try {
+            height = $el.offsetHeight
+        } catch (e) {
+            height = 0
+        }
         this.beforeHeight = height
         if (this.state === STATES.ACTIVE) {
             this.stopTransition()
             this.log('Transition was interrupted.')
         }
-        this.transition(STATES.ACTIVE)
     }
-    doSmoothReflow() {
-        if (!this.$el) {
+    doSmoothReflow($el) {
+        if (!$el) {
+            this.log("Vue updated hook: could not find registered el.")
             return
         }
-        let { $el, beforeHeight, options } = this
+        this.$el = $el
+        this.transition(STATES.ACTIVE)
 
-        let computedStyle = window.getComputedStyle($el)
-        let afterHeight = computedStyle['height']
+        let { beforeHeight, options } = this
+        
+        let afterHeight = $el.offsetHeight
         if (beforeHeight == afterHeight) {
             this.transition(STATES.INACTIVE)
             this.log(`Element height did not change between render.`)
@@ -127,6 +138,7 @@ class SmoothElement {
         }
         this.log(`Previous height: ${beforeHeight} Current height: ${afterHeight}`)
     
+        let computedStyle = window.getComputedStyle($el)
         let transition = computedStyle.transition
         let parsedTransition = parseCssTransition(transition)
         if (this.hasHeightTransition(parsedTransition)) {
@@ -147,10 +159,11 @@ class SmoothElement {
             $el.style.overflowX = 'hidden'
             $el.style.overflowY = 'hidden'
         }
-    
-        $el.style['height'] = beforeHeight
+        
+        $el.style['height'] = beforeHeight + 'px'
         $el.offsetHeight // Force reflow
-        $el.style['height'] = afterHeight
+        $el.style['height'] = afterHeight + 'px'
+        
         $el.addEventListener('transitionend', this.endListener, { passive: true })
     }
     hasHeightTransition(parsedTransition) {
