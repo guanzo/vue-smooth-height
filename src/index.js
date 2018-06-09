@@ -139,8 +139,7 @@ class SmoothElement {
         this.log(`Previous height: ${beforeHeight} Current height: ${afterHeight}`)
     
         let computedStyle = window.getComputedStyle($el)
-        let transition = computedStyle.transition
-        let parsedTransition = parseCssTransition(transition)
+        let parsedTransition = parseCssTransition(computedStyle.transition)
         if (this.hasHeightTransition(parsedTransition)) {
             this.hasExistingHeightTransition = true
         } else {

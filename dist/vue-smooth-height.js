@@ -230,6 +230,7 @@ var mixin = {
 
     this._smoothElements.forEach(function (e) {
       // Retrieve registered element on demand
+      // El could have been hidden by v-if/v-show
       var $el = select(_this.$el, e.options.el);
       e.beforeUpdate($el);
     });
@@ -318,9 +319,7 @@ function () {
     value: function endListener(e) {
       if (e.currentTarget !== e.target || e.propertyName !== 'height') return;
       this.stopTransition();
-    } // $el is dynamically queried before each component update
-    // to cover the case where the element is hidden with v-if/v-show/etc
-
+    }
   }, {
     key: "beforeUpdate",
     value: function beforeUpdate($el) {
@@ -365,8 +364,7 @@ function () {
 
       this.log("Previous height: ".concat(beforeHeight, " Current height: ").concat(afterHeight));
       var computedStyle = window.getComputedStyle($el);
-      var transition = computedStyle.transition;
-      var parsedTransition = (0, _parseCssTransition.default)(transition);
+      var parsedTransition = (0, _parseCssTransition.default)(computedStyle.transition);
 
       if (this.hasHeightTransition(parsedTransition)) {
         this.hasExistingHeightTransition = true;
@@ -389,7 +387,6 @@ function () {
       $el.offsetHeight; // Force reflow
 
       $el.style['height'] = afterHeight + 'px';
-      console.log(afterHeight, $el.style['height']);
       $el.addEventListener('transitionend', this.endListener, {
         passive: true
       });
