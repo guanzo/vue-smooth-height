@@ -7,7 +7,7 @@ When the component's data is changed (i.e. when the `updated` lifecycle hook is 
 Note that this library has no overlap with Vue's built in transition components.
 
 ## Demo
-https://jsfiddle.net/axfwg1L0/40/
+https://jsfiddle.net/axfwg1L0/42/
 
 ## Installation
 
