@@ -1,6 +1,6 @@
 {
   "name": "vue-smooth-height",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "Transition a container elements height in response to data changes",
   "license": "MIT",
   "repository": {
