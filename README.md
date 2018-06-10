@@ -7,7 +7,7 @@ When the component's data is changed (i.e. when the `updated` lifecycle hook is 
 Note that this library has no overlap with Vue's built in transition components.
 
 ## Demo
-https://jsfiddle.net/axfwg1L0/36/
+https://jsfiddle.net/axfwg1L0/40/
 
 ## Installation
 
@@ -48,7 +48,7 @@ export default {
 
 Browser:
 
-The mixin is available via the global variable `SmoothHeight`
+Same usage as above, except the mixin is available via the global variable `SmoothHeight`
 
 ## CSS Transitions
 VSM will check if the element has a height transition, either through the stylesheet or inline styles. If it exists, VSM will use that. If it doesn't, it will apply `transition: height .5s` to the element's inline style, and append any existing transition properties it finds.
@@ -79,7 +79,7 @@ Enables smooth height transition on an element.
 -----|-----|-----|-----
 el|Element, String|null|Required. A reference to the element, or a selector string. Use a selector string if the element is not rendered initially. If the selector string is a class, the first query match will be used.
 transition|String|<nobr>`height .5s`</nobr>| The CSS shorthand `transition` property. Use this option if you don't want to use stylesheets (`<style>...</style>`). 
-hideOverflow|Boolean|false|If the element has a scrollbar, ugly reflow flickers can occur when children create/destroy a new row (think flexbox). Set true to disable overflow during the transition.
+hideOverflow|Boolean|false|If the element has `overflow-y: auto`, a scrollbar can temporarily appear during the transition. Set this option to `true` to hide the scrollbar during the transition.
 debug|Boolean|false|Logs messages at certain times within the transition lifecycle.
 
 
@@ -112,7 +112,9 @@ mounted(){
         },
         {
             el: '.container',
-            hideOverflow: true
+            hideOverflow: true,
+            transition: 'height 1s ease-in-out .15s'
+            debug: true,
         }
     ])
     // If the element reference is a component, 
