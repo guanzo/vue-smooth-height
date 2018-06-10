@@ -7,7 +7,7 @@ When the component's data is changed (i.e. when the `updated` lifecycle hook is 
 Note that this library has no overlap with Vue's built in transition components.
 
 ## Demo
-https://jsfiddle.net/axfwg1L0/46/
+https://jsfiddle.net/axfwg1L0/47/
 
 ## Installation
 
@@ -48,7 +48,24 @@ export default {
 
 Browser:
 
-Same usage as above, except the mixin is available via the global variable `SmoothHeight`
+The mixin is available via the global variable `SmoothHeight`
+
+```javascript
+Vue.component('myComponent', {
+    mixins:[SmoothHeight],
+    mounted(){
+        this.$smoothElement({
+            el: this.$refs.container,
+        })
+    },
+     template: 
+        `
+        <div>
+            <div ref="container"></div>
+        </div>
+        `
+})
+```
 
 ## CSS Transitions
 VSM will check if the element has a height transition, either through the stylesheet or inline styles. If it exists, VSM will use that. If it doesn't, it will apply `transition: height .5s` to the element's inline style, and append any existing transition properties it finds.
