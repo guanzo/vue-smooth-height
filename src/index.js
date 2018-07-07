@@ -4,7 +4,7 @@ const mixin = {
     methods: {
         $smoothElement(options) {
             let _addElement = addElement.bind(this)
-            if (Array.isArray(options)) 
+            if (Array.isArray(options))
                 options.forEach(_addElement)
             else
                 _addElement(options)
@@ -13,7 +13,7 @@ const mixin = {
             let _removeElement = removeElement.bind(this)
             if (Array.isArray(options))
                 options.forEach(_removeElement)
-            else 
+            else
                 _removeElement(options)
         },
     },
@@ -21,17 +21,17 @@ const mixin = {
         this._smoothElements = []
     },
     beforeUpdate() {
-        if (!this._smoothElements || !this._smoothElements.length) 
+        if (!this._smoothElements || !this._smoothElements.length)
             return
         this._smoothElements.forEach(e => {
             // Retrieve registered element on demand
             // El could have been hidden by v-if/v-show
             let $el = select(this.$el, e.options.el)
-            e.beforeUpdate($el)
+            e.getBeforeHeight($el)
         })
     },
     updated() {
-        if (!this._smoothElements || !this._smoothElements.length) 
+        if (!this._smoothElements || !this._smoothElements.length)
             return
         this.$nextTick(()=>{
             this._smoothElements.forEach(e => {
@@ -69,29 +69,35 @@ function removeElement(option) {
 function select(rootEl, el) {
     if (typeof el === 'string')
         return rootEl.matches(el) ? rootEl : rootEl.querySelector(el)
-    else 
+    else
         return el
 }
 
-const STATES = {
-    INACTIVE: 0,
-    ACTIVE: 1
-}
+let iota = 0
+const STATES = Object.freeze({
+    INACTIVE: iota++,
+    ACTIVE: iota++
+})
 
 class SmoothElement {
-    constructor(options) {
-        options = {
-            el: null, // User given argument. Element or selector string
-            transition: 'height .5s', // User can specify a transition if they don't want to use CSS
+    constructor(userOptions) {
+        let defaultOptions = {
+            // Element or selector string.
+            el: null,
+            // Element or selector string.
+            // Wait for 'transitionend' on this element, before doSmoothReflow
+            waitFor: null,
+            // User can specify a transition if they don't want to use CSS
+            transition: 'height .5s',
             hideOverflow: false,
-            debug: false,
-            ...options
+            debug: false
         }
         Object.assign(this, {
             $el: null,// Resolved Element from el
             hasExistingHeightTransition: false,
             state: STATES.INACTIVE,
-            options
+            ...defaultOptions,
+            ...userOptions
         })
         // transition end callback will call endListener, so it needs the correct context
         this.endListener = this.endListener.bind(this)
@@ -104,7 +110,7 @@ class SmoothElement {
             return
         this.stopTransition()
     }
-    beforeUpdate($el) {
+    getBeforeHeight($el) {
         if (!$el) {
             this.log("Vue beforeUpdate hook: could not find registered el.")
         }
@@ -129,7 +135,7 @@ class SmoothElement {
         this.transition(STATES.ACTIVE)
 
         let { beforeHeight, options } = this
-        
+
         let afterHeight = $el.offsetHeight
         if (beforeHeight == afterHeight) {
             this.transition(STATES.INACTIVE)
@@ -137,7 +143,7 @@ class SmoothElement {
             return
         }
         this.log(`Previous height: ${beforeHeight} Current height: ${afterHeight}`)
-    
+
         let computedStyle = window.getComputedStyle($el)
         let parsedTransition = parseCssTransition(computedStyle.transition)
         if (this.hasHeightTransition(parsedTransition)) {
@@ -146,23 +152,23 @@ class SmoothElement {
             this.hasExistingHeightTransition = false
             this.addHeightTransition(parsedTransition, options.transition)
         }
-    
+
         if (options.hideOverflow) {
             //save overflow properties before overwriting
             let overflowY = computedStyle.overflowY,
                 overflowX = computedStyle.overflowX
-    
+
             this.overflowX = overflowX
             this.overflowY = overflowY
-    
+
             $el.style.overflowX = 'hidden'
             $el.style.overflowY = 'hidden'
         }
-        
+
         $el.style['height'] = beforeHeight + 'px'
         $el.offsetHeight // Force reflow
         $el.style['height'] = afterHeight + 'px'
-        
+
         $el.addEventListener('transitionend', this.endListener, { passive: true })
     }
     hasHeightTransition(parsedTransition) {
@@ -179,11 +185,11 @@ class SmoothElement {
         this.$el.style.transition = [...transitions, heightTransition].join(',')
     }
     stopTransition() {
-        let { 
+        let {
             $el, options, overflowX, overflowY,
             hasExistingHeightTransition,
         } = this
-    
+
         $el.style['height'] = null // Change height back to auto
         if (options.hideOverflow) {
             // Restore original overflow properties
