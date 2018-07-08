@@ -27,7 +27,7 @@ const mixin = {
             // Retrieve registered element on demand
             // El could have been hidden by v-if/v-show
             let $el = select(this.$el, e.options.el)
-            e.getBeforeHeight($el)
+            e.setBeforeHeight($el)
         })
     },
     updated() {
@@ -46,9 +46,8 @@ const mixin = {
 
 // 'this' is vue component
 function addElement(option) {
-    if (!option.el) {
-        console.error('vue-smooth-height: Missing required property: "el"')
-        return
+    if (!option.hasOwnProperty('el')) {
+        option.el = this.$el
     }
     this._smoothElements.push(new SmoothElement(option))
 }
@@ -57,12 +56,14 @@ function addElement(option) {
 function removeElement(option) {
     let root = this.$el
     let index = this._smoothElements.findIndex(d => {
-        return select(root, d.el).isEqualNode(select(root, option.el))
+        return select(root, d.el) === select(root, option.el)
     })
     if (index == -1) {
-        console.error("vue-smooth-height: Remove smooth element failed due to invalid el option")
+        console.error("VSM_ERROR: $unsmoothElement failed due to invalid el option")
         return
     }
+    let smoothEl = this._smoothElements[index]
+    smoothEl.remove()
     this._smoothElements.splice(index, 1)
 }
 
@@ -80,24 +81,24 @@ const STATES = Object.freeze({
 })
 
 class SmoothElement {
-    constructor(userOptions) {
-        let defaultOptions = {
+    constructor(options) {
+        options = {
             // Element or selector string.
             el: null,
-            // Element or selector string.
-            // Wait for 'transitionend' on this element, before doSmoothReflow
-            waitFor: null,
             // User can specify a transition if they don't want to use CSS
             transition: 'height .5s',
+            childTransitions: true,
             hideOverflow: false,
-            debug: false
+            debug: false,
+            ...options
         }
         Object.assign(this, {
             $el: null,// Resolved Element from el
             hasExistingHeightTransition: false,
+            beforeHeight: null,
+            afterHeight: null,
             state: STATES.INACTIVE,
-            ...defaultOptions,
-            ...userOptions
+            options,
         })
         // transition end callback will call endListener, so it needs the correct context
         this.endListener = this.endListener.bind(this)
@@ -105,21 +106,24 @@ class SmoothElement {
     transition(to) {
         this.state = to
     }
-    endListener(e) {
-        if (e.currentTarget !== e.target || e.propertyName !== 'height')
-            return
-        this.stopTransition()
+    /**
+     * Indicates if the smooth transition increased or decreased the elements height
+     * A positive result means the height was increased
+     */
+    get heightDiff() {
+        let { beforeHeight, afterHeight } = this
+        if (beforeHeight == null || afterHeight == null) {
+            return 0
+        }
+        return afterHeight - beforeHeight
     }
-    getBeforeHeight($el) {
-        if (!$el) {
-            this.log("Vue beforeUpdate hook: could not find registered el.")
-        }
+    setBeforeHeight($el) {
+        this.afterHeight = null
         let height
-        try {
+        if ($el) {
             height = $el.offsetHeight
-        } catch (e) {
-            height = 0
         }
+
         this.beforeHeight = height
         if (this.state === STATES.ACTIVE) {
             this.stopTransition()
@@ -128,20 +132,32 @@ class SmoothElement {
     }
     doSmoothReflow($el) {
         if (!$el) {
-            this.log("Vue updated hook: could not find registered el.")
+            this.log("Could not find registered el.")
             return
         }
         this.$el = $el
         this.transition(STATES.ACTIVE)
+        $el.addEventListener('transitionend', this.endListener, { passive: true })
 
         let { beforeHeight, options } = this
 
+        // If this.afterHeight is set, that means doSmoothReflow() was called after
+        // a nested transition finished. This check is made to ensure that
+        // a height transition only occurs on a false conditional render,
+        // a.k.a. an element is being hidden rather than shown.
+        // VSM works normally on a true conditional render.
         let afterHeight = $el.offsetHeight
-        if (beforeHeight == afterHeight) {
+        if (this.afterHeight != null && this.afterHeight === afterHeight) {
+            this.log(`Element height did not change after nested transition. Height = ${afterHeight}`)
             this.transition(STATES.INACTIVE)
-            this.log(`Element height did not change between render.`)
             return
         }
+        if (beforeHeight === afterHeight) {
+            this.log(`Element height did not change. Height = ${afterHeight}`)
+            this.transition(STATES.INACTIVE)
+            return
+        }
+        this.afterHeight = afterHeight
         this.log(`Previous height: ${beforeHeight} Current height: ${afterHeight}`)
 
         let computedStyle = window.getComputedStyle($el)
@@ -168,8 +184,6 @@ class SmoothElement {
         $el.style['height'] = beforeHeight + 'px'
         $el.offsetHeight // Force reflow
         $el.style['height'] = afterHeight + 'px'
-
-        $el.addEventListener('transitionend', this.endListener, { passive: true })
     }
     hasHeightTransition(parsedTransition) {
         return parsedTransition.find(t => {
@@ -183,6 +197,23 @@ class SmoothElement {
             return `${t.name} ${t.duration}ms ${t.timingFunction} ${t.delay}ms`
         })
         this.$el.style.transition = [...transitions, heightTransition].join(',')
+    }
+    endListener(e) {
+        // Transition on smooth element finished
+        if (e.currentTarget === e.target) {
+            if (e.propertyName === 'height') {
+                this.stopTransition()
+            }
+        }
+        // Transition on element INSIDE smooth element finished
+        // heightDiff <= 0 prevents calling doSmoothReflow during a
+        // transition that increases height.
+        // solves the case where a nested transition duration is
+        // shorter than the height transition duration, causing doSmoothReflow
+        // to reflow in the middle of the height transition
+        else if (this.heightDiff <= 0 && this.options.childTransitions) {
+            this.doSmoothReflow(this.$el)
+        }
     }
     stopTransition() {
         let {
@@ -200,8 +231,11 @@ class SmoothElement {
         if (!hasExistingHeightTransition) {
             $el.style.transition = null
         }
-        $el.removeEventListener('transitionend', this.endListener)
+
         this.transition(STATES.INACTIVE)
+    }
+    remove() {
+        this.$el.removeEventListener('transitionend', this.endListener)
     }
     log(text) {
         if (this.options.debug)
