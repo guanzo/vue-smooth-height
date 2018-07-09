@@ -45,7 +45,7 @@ const mixin = {
 }
 
 // 'this' is vue component
-function addElement(option) {
+function addElement(option = {}) {
     if (!option.hasOwnProperty('el')) {
         option.el = this.$el
     }

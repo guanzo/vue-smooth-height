@@ -250,7 +250,9 @@ var mixin = {
   }
 }; // 'this' is vue component
 
-function addElement(option) {
+function addElement() {
+  var option = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
   if (!option.hasOwnProperty('el')) {
     option.el = this.$el;
   }
