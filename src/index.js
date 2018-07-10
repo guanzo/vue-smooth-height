@@ -118,7 +118,10 @@ class SmoothElement {
         return afterHeight - beforeHeight
     }
     setBeforeHeight($el) {
+        // This property could be set by a previous update
+        // Reset it so it doesn't affect the current update
         this.afterHeight = null
+
         let height
         if ($el) {
             height = $el.offsetHeight
@@ -130,7 +133,7 @@ class SmoothElement {
             this.log('Transition was interrupted.')
         }
     }
-    doSmoothReflow($el) {
+    doSmoothReflow($el, triggeredBy = 'data update') {
         if (!$el) {
             this.log("Could not find registered el.")
             return
@@ -138,6 +141,7 @@ class SmoothElement {
         this.$el = $el
         this.transition(STATES.ACTIVE)
         $el.addEventListener('transitionend', this.endListener, { passive: true })
+        this.log(`Height transition triggered by: ${triggeredBy}`)
 
         let { beforeHeight, options } = this
 
@@ -203,6 +207,10 @@ class SmoothElement {
         if (e.currentTarget === e.target) {
             if (e.propertyName === 'height') {
                 this.stopTransition()
+                // Record the height AFTER the data change, but potentially
+                // BEFORE any child transitions start.
+                // Useful for cases like transition mode="out-in"
+                this.setBeforeHeight(this.$el)
             }
         }
         // Transition on element INSIDE smooth element finished
@@ -212,7 +220,7 @@ class SmoothElement {
         // shorter than the height transition duration, causing doSmoothReflow
         // to reflow in the middle of the height transition
         else if (this.heightDiff <= 0 && this.options.childTransitions) {
-            this.doSmoothReflow(this.$el)
+            this.doSmoothReflow(this.$el, 'child transition')
         }
     }
     stopTransition() {

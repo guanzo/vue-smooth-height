@@ -330,6 +330,8 @@ function () {
   }, {
     key: "setBeforeHeight",
     value: function setBeforeHeight($el) {
+      // This property could be set by a previous update
+      // Reset it so it doesn't affect the current update
       this.afterHeight = null;
       var height;
 
@@ -347,6 +349,8 @@ function () {
   }, {
     key: "doSmoothReflow",
     value: function doSmoothReflow($el) {
+      var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'data update';
+
       if (!$el) {
         this.log("Could not find registered el.");
         return;
@@ -357,6 +361,7 @@ function () {
       $el.addEventListener('transitionend', this.endListener, {
         passive: true
       });
+      this.log("Height transition triggered by: ".concat(context));
       var beforeHeight = this.beforeHeight,
           options = this.options; // If this.afterHeight is set, that means doSmoothReflow() was called after
       // a nested transition finished. This check is made to ensure that
@@ -428,7 +433,11 @@ function () {
       // Transition on smooth element finished
       if (e.currentTarget === e.target) {
         if (e.propertyName === 'height') {
-          this.stopTransition();
+          this.stopTransition(); // Record the height AFTER the data change, but potentially
+          // BEFORE any child transitions start.
+          // Useful for cases like transition mode="out-in"
+
+          this.setBeforeHeight(this.$el);
         }
       } // Transition on element INSIDE smooth element finished
       // heightDiff <= 0 prevents calling doSmoothReflow during a
@@ -437,7 +446,7 @@ function () {
       // shorter than the height transition duration, causing doSmoothReflow
       // to reflow in the middle of the height transition
       else if (this.heightDiff <= 0 && this.options.childTransitions) {
-          this.doSmoothReflow(this.$el);
+          this.doSmoothReflow(this.$el, 'child transition');
         }
     }
   }, {
