@@ -13,7 +13,7 @@ const commonConfig = {
         rules: [
             {
                 test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
+                exclude: /node_modules\/(?!(parse-css-transition)\/).*/,
                 use: {
                     loader: 'babel-loader',
                     options: {

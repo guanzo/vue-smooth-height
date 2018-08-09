@@ -20,6 +20,7 @@
     "auto"
   ],
   "main": "dist/vue-smooth-height.js",
+  "module": "src/index.js",
   "scripts": {
     "build": "webpack",
     "prepublish": "npm run build"

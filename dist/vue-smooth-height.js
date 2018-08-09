@@ -103,47 +103,56 @@ return /******/ (function(modules) { // webpackBootstrap
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const toMillies = __webpack_require__(/*! ./to-millies */ "./node_modules/parse-css-transition/to-millies.js");
+"use strict";
+
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var toMillies = __webpack_require__(/*! ./to-millies */ "./node_modules/parse-css-transition/to-millies.js");
 
 function isTime(value) {
   return /^-?(0?\.)?\d+m?s$/.test(value);
 }
 
 function parseSingleTransition(transition) {
-  const [
-    name,
-    duration,
-    timingFunctionOrDelay,
-    delay,
-  ] = transition
-    .split(/\s+/)
+  var _transition$split = transition.split(/\s+/),
+      _transition$split2 = _slicedToArray(_transition$split, 4),
+      name = _transition$split2[0],
+      duration = _transition$split2[1],
+      timingFunctionOrDelay = _transition$split2[2],
+      delay = _transition$split2[3];
 
   if (isTime(timingFunctionOrDelay)) {
     return {
       delay: toMillies(timingFunctionOrDelay),
       duration: toMillies(duration),
-      name,
+      name: name
     };
   }
 
   return {
     delay: toMillies(delay),
     duration: toMillies(duration),
-    name,
-    timingFunction: timingFunctionOrDelay,
+    name: name,
+    timingFunction: timingFunctionOrDelay
   };
 }
 
 function parseCssTransition(transition) {
-  return transition
-    .split(',')
-    .map(value => value.trim())
-    .filter(value => value.length > 0)
-    .map(parseSingleTransition);
+  return transition.split(',').map(function (value) {
+    return value.trim();
+  }).filter(function (value) {
+    return value.length > 0;
+  }).map(parseSingleTransition);
 }
 
 module.exports = parseCssTransition;
-
 
 /***/ }),
 
@@ -152,7 +161,9 @@ module.exports = parseCssTransition;
   !*** ./node_modules/parse-css-transition/to-millies.js ***!
   \*********************************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
 
 
 function toMillies(value) {
@@ -160,13 +171,11 @@ function toMillies(value) {
     return;
   }
 
-  const isMillies = value.endsWith('ms');
-
+  var isMillies = value.endsWith('ms');
   return parseFloat(value) * (isMillies ? 1 : 1000);
 }
 
 module.exports = toMillies;
-
 
 /***/ }),
 
@@ -349,7 +358,7 @@ function () {
   }, {
     key: "doSmoothReflow",
     value: function doSmoothReflow($el) {
-      var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'data update';
+      var triggeredBy = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'data update';
 
       if (!$el) {
         this.log("Could not find registered el.");
@@ -361,7 +370,7 @@ function () {
       $el.addEventListener('transitionend', this.endListener, {
         passive: true
       });
-      this.log("Height transition triggered by: ".concat(context));
+      this.log("Height transition triggered by: ".concat(triggeredBy));
       var beforeHeight = this.beforeHeight,
           options = this.options; // If this.afterHeight is set, that means doSmoothReflow() was called after
       // a nested transition finished. This check is made to ensure that
