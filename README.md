@@ -1,6 +1,6 @@
 # Deprecation notice
 
-Due to an unfortunate naming decision, this package has moved to [vue-smooth-reflow](https://github.com/guanzo/vue-smooth-reflow).
+Due to an unfortunate naming decision, this package has moved to [vue-smooth-reflow](https://github.com/guanzo/vue-smooth-reflow). vue-smooth-reflow has more feature and better handling of child transitions.
 
 
 # Vue Smooth Height (VSM)
