@@ -87,7 +87,8 @@ class SmoothElement {
             el: null,
             // User can specify a transition if they don't want to use CSS
             transition: 'height .5s',
-            childTransitions: true,
+            // Element or selector string that will emit a transitionend event.
+            childTransitions: null,
             hideOverflow: false,
             debug: false,
             ...options
@@ -219,9 +220,13 @@ class SmoothElement {
         // solves the case where a nested transition duration is
         // shorter than the height transition duration, causing doSmoothReflow
         // to reflow in the middle of the height transition
-        else if (this.heightDiff <= 0 && this.options.childTransitions) {
+        else if (this.heightDiff <= 0 && this.isRegisteredChildTransition(e)) {
             this.doSmoothReflow(this.$el, 'child transition')
         }
+    }
+    isRegisteredChildTransition(e) {
+        let { childTransitions } = this.options
+        return e.target.matches(childTransitions)
     }
     stopTransition() {
         let {

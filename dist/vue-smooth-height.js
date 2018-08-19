@@ -309,7 +309,8 @@ function () {
       el: null,
       // User can specify a transition if they don't want to use CSS
       transition: 'height .5s',
-      childTransitions: true,
+      // Element or selector string that will emit a transitionend event.
+      childTransitions: null,
       hideOverflow: false,
       debug: false
     }, options);
@@ -454,9 +455,15 @@ function () {
       // solves the case where a nested transition duration is
       // shorter than the height transition duration, causing doSmoothReflow
       // to reflow in the middle of the height transition
-      else if (this.heightDiff <= 0 && this.options.childTransitions) {
+      else if (this.heightDiff <= 0 && this.isRegisteredChildTransition(e)) {
           this.doSmoothReflow(this.$el, 'child transition');
         }
+    }
+  }, {
+    key: "isRegisteredChildTransition",
+    value: function isRegisteredChildTransition(e) {
+      var childTransitions = this.options.childTransitions;
+      return e.target.matches(childTransitions);
     }
   }, {
     key: "stopTransition",

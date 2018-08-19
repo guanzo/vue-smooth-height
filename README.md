@@ -1,3 +1,7 @@
+# Deprecation notice
+
+Due to an unfortunate naming decision, this package has moved to [vue-smooth-reflow](https://github.com/guanzo/vue-smooth-reflow).
+
 
 # Vue Smooth Height (VSM)
 A Vue mixin that answers the question, "How do I transition height: auto?"
